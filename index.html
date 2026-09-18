@@ -147,9 +147,30 @@ const LS = {
   set(k, v) { localStorage.setItem(k, JSON.stringify(v)); }
 };
 
-let mapGeneral = LS.get('opic_map_general', {});
-let mapRP = LS.get('opic_map_rp', {});
-let scriptPick = LS.get('opic_script_pick', {});
+// 기기/브라우저에 저장된 기록이 없을 때 보여줄 기본값 (2026-09-19 기준 내보내기 반영)
+const DEFAULT_PROGRESS = {
+  opic_map_general: {
+    "1": "furniture", "2": "recycling", "3": "housing", "4": "music", "5": "movie",
+    "6": "TV", "7": "restaurant", "8": "Gathering", "9": "vacation at home", "10": "food",
+    "11": "Health", "12": "shopping", "13": "Domestic trips", "14": "Overseas trip", "15": "geography",
+    "16": "internet", "17": "phone/technology", "18": "phone/technology", "19": "industry", "20": "weather",
+    "21": "transportation", "22": "fashion", "23": "bank", "24": "Hotel", "25": "appointment",
+    "26": "free time", "27": "family/friend", "28": "holidays"
+  },
+  opic_map_rp: {
+    "1": "store", "2": "traveling", "3": "hotel", "4": "furniture", "5": "realestate",
+    "6": "relatives", "7": "recycling", "8": "mp3", "9": "flight", "10": "rentalcar",
+    "11": "carproblem", "12": "performance", "13": "movie", "14": "TV", "15": "bank",
+    "16": "doctor's app", "17": "company interview", "18": "party/celebration", "19": "freetime/gathering", "20": "techindustry",
+    "21": "gym", "22": "Nutritionist", "23": "health/food", "24": "restaurant", "25": "internet",
+    "26": "phone"
+  },
+  opic_script_pick: {}
+};
+
+let mapGeneral = LS.get('opic_map_general', DEFAULT_PROGRESS.opic_map_general);
+let mapRP = LS.get('opic_map_rp', DEFAULT_PROGRESS.opic_map_rp);
+let scriptPick = LS.get('opic_script_pick', DEFAULT_PROGRESS.opic_script_pick);
 
 // 이전 버전에서 저장해둔 선택값을 새 데이터 구조(key)로 자동 이전
 function migrateMap(type) {
