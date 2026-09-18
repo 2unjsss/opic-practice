@@ -115,6 +115,12 @@
   }
   .empty-note { color: var(--ink-soft); font-size: 14px; padding: 20px 0; }
   .hint { font-size: 12px; color: var(--ink-soft); margin-top: 2px; }
+  .backup-row { display: flex; gap: 16px; padding: 8px 0 14px; }
+  .backup-row button {
+    background: none; border: none; color: var(--ink-soft); cursor: pointer;
+    font-size: 12.5px; padding: 0; text-decoration: underline;
+  }
+  .backup-row button:hover { color: var(--accent); }
 </style>
 </head>
 <body>
@@ -123,6 +129,11 @@
   <div class="tabs">
     <button class="tab" data-tab="map">매핑 설정</button>
     <button class="tab" data-tab="practice">연습</button>
+  </div>
+  <div class="backup-row">
+    <button id="exportBtn" type="button">진행상황 내보내기</button>
+    <button id="importBtn" type="button">가져오기</button>
+    <input type="file" id="importFile" accept="application/json" style="display:none">
   </div>
 </header>
 <main id="app"></main>
@@ -401,6 +412,50 @@ function render() {
 document.querySelectorAll('.tab').forEach(t => {
   t.onclick = () => { stopActiveAudio(); state.tab = t.dataset.tab; render(); };
 });
+
+// ---------- 진행상황 내보내기 / 가져오기 (다른 브라우저·주소로 옮길 때 사용) ----------
+function exportBackup() {
+  const data = {
+    opic_map_general: LS.get('opic_map_general', {}),
+    opic_map_rp: LS.get('opic_map_rp', {}),
+    opic_script_pick: LS.get('opic_script_pick', {})
+  };
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'opic-progress-' + new Date().toISOString().slice(0, 10) + '.json';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function importBackup(file) {
+  const reader = new FileReader();
+  reader.onload = () => {
+    try {
+      const data = JSON.parse(reader.result);
+      if (data.opic_map_general) LS.set('opic_map_general', data.opic_map_general);
+      if (data.opic_map_rp) LS.set('opic_map_rp', data.opic_map_rp);
+      if (data.opic_script_pick) LS.set('opic_script_pick', data.opic_script_pick);
+      mapGeneral = LS.get('opic_map_general', {});
+      mapRP = LS.get('opic_map_rp', {});
+      scriptPick = LS.get('opic_script_pick', {});
+      alert('가져오기 완료!');
+      render();
+    } catch (e) {
+      alert('파일을 읽을 수 없어요. JSON 형식을 확인해주세요.');
+    }
+  };
+  reader.readAsText(file);
+}
+
+document.getElementById('exportBtn').onclick = exportBackup;
+document.getElementById('importBtn').onclick = () => document.getElementById('importFile').click();
+document.getElementById('importFile').onchange = (e) => {
+  const file = e.target.files[0];
+  if (file) importBackup(file);
+  e.target.value = '';
+};
 
 render();
 </script>
