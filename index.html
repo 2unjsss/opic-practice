@@ -199,6 +199,17 @@
   }
   .speak-btn:active { transform: scale(0.97); }
 
+  /* 연습 화면: 스크립트를 스크롤해도 위쪽(제목/Ava/문항선택/플레이어)은 고정 */
+  .practice-sticky {
+    position: sticky; top: var(--header-h, 64px); z-index: 5;
+    background: var(--paper); margin: 0 -18px; padding: 0 18px 14px;
+    box-shadow: 0 8px 10px -8px rgba(150, 110, 70, 0.18);
+  }
+  .practice-sticky .section-title { margin-top: 4px; }
+  .practice-sticky .q-grid,
+  .practice-sticky .player-box { margin-bottom: 0; margin-top: 14px; }
+  .practice-sticky .ava-row-standalone { margin-top: 14px; margin-bottom: 0; }
+
   /* 하단 탭바 */
   .tabbar {
     position: fixed; left: 0; right: 0; bottom: 0; z-index: 10;
@@ -415,7 +426,6 @@ function renderPracticeTab() {
   const crumb = document.createElement('div');
   crumb.className = 'crumb';
   crumb.innerHTML = `<button id="crumb-root">연습</button>`;
-  el.appendChild(crumb);
   crumb.querySelector('#crumb-root').onclick = () => { stopActiveAudio(); state.practiceType = null; renderPracticeTab(); };
 
   const type = state.practiceType;
@@ -423,6 +433,7 @@ function renderPracticeTab() {
   const nums = audioNums(type);
 
   if (state.practiceNum === null) {
+    el.appendChild(crumb);
     const title = document.createElement('div');
     title.className = 'section-title';
     title.textContent = (type==='general'?'일반 문항':'Role Play') + ' 주제 선택';
@@ -455,10 +466,16 @@ function renderPracticeTab() {
   crumb.innerHTML += ` › <button id="crumb-topic">${topic.label_ko}</button>`;
   crumb.querySelector('#crumb-topic').onclick = () => { stopActiveAudio(); state.practiceNum = null; renderPracticeTab(); };
 
+  // 스크립트를 스크롤해서 봐도 위쪽(제목/Ava/문항 선택/플레이어)은 화면에 고정
+  const stickyWrap = document.createElement('div');
+  stickyWrap.className = 'practice-sticky';
+  el.appendChild(stickyWrap);
+  stickyWrap.appendChild(crumb);
+
   const title = document.createElement('div');
   title.className = 'section-title';
   title.textContent = `${topic.label_ko} ${topic.label_en} — 문항 선택`;
-  el.appendChild(title);
+  stickyWrap.appendChild(title);
 
   const avaRow = document.createElement('div');
   avaRow.className = 'ava-row ava-row-standalone';
@@ -469,7 +486,7 @@ function renderPracticeTab() {
       <div class="ava-topic-value">${topic.label_ko} · ${topic.label_en}</div>
     </div>
   `;
-  el.appendChild(avaRow);
+  stickyWrap.appendChild(avaRow);
 
   const grid = document.createElement('div');
   grid.className = 'q-grid';
@@ -480,7 +497,7 @@ function renderPracticeTab() {
     chip.onclick = () => { stopActiveAudio(); state.practiceSub = s; renderPracticeTab(); };
     grid.appendChild(chip);
   }
-  el.appendChild(grid);
+  stickyWrap.appendChild(grid);
 
   const sub = state.practiceSub;
   const playerBox = document.createElement('div');
@@ -489,7 +506,7 @@ function renderPracticeTab() {
   audioEl.controls = true;
   audioEl.src = audioPath(type, state.practiceNum, sub);
   playerBox.appendChild(audioEl);
-  el.appendChild(playerBox);
+  stickyWrap.appendChild(playerBox);
   // 이 플레이어도 전역 중지 대상으로 등록 (다른 걸 누르면 같이 멈추도록)
   audioEl.addEventListener('play', () => {
     if (activeAudio && activeAudio !== audioEl) { activeAudio.pause(); if (activeAudioBtn) activeAudioBtn.textContent = '▶'; }
@@ -699,6 +716,13 @@ document.getElementById('importFile').onchange = (e) => {
 document.addEventListener('click', (e) => {
   if (!menuPanel.contains(e.target) && e.target.id !== 'menuBtn') menuPanel.classList.add('hidden');
 });
+
+// 헤더 실제 높이를 측정해서 연습 화면 고정 영역이 헤더 바로 아래에 붙도록 함
+function updateHeaderHeightVar() {
+  document.documentElement.style.setProperty('--header-h', document.querySelector('header').offsetHeight + 'px');
+}
+window.addEventListener('resize', updateHeaderHeightVar);
+updateHeaderHeightVar();
 
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
