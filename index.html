@@ -171,6 +171,10 @@
     margin-bottom: 20px; box-shadow: var(--shadow);
   }
   .ava-row { display: flex; align-items: center; gap: 14px; }
+  .ava-row-standalone {
+    background: var(--leaf-soft); border-radius: var(--radius-lg); padding: 16px 18px;
+    margin-bottom: 16px; box-shadow: var(--shadow);
+  }
   .ava-img {
     width: 88px; height: 88px; border-radius: 50%; object-fit: cover;
     box-shadow: var(--shadow); border: 3px solid var(--card); flex-shrink: 0;
@@ -456,6 +460,17 @@ function renderPracticeTab() {
   title.textContent = `${topic.label_ko} ${topic.label_en} — 문항 선택`;
   el.appendChild(title);
 
+  const avaRow = document.createElement('div');
+  avaRow.className = 'ava-row ava-row-standalone';
+  avaRow.innerHTML = `
+    <img class="ava-img" src="ava.png" alt="Ava">
+    <div class="ava-topic">
+      <div class="ava-topic-label">주제</div>
+      <div class="ava-topic-value">${topic.label_ko} · ${topic.label_en}</div>
+    </div>
+  `;
+  el.appendChild(avaRow);
+
   const grid = document.createElement('div');
   grid.className = 'q-grid';
   for (let s = 1; s <= numInfo.count; s++) {
@@ -524,17 +539,10 @@ function renderPracticeTab() {
 
   if (!picked) return;
 
-  // ---------- Ava 연습 화면 ----------
+  // ---------- Ava 재생 화면 (얼굴/주제는 위쪽에 항상 표시되고, 여기는 재생·자막만) ----------
   const scene = document.createElement('div');
   scene.className = 'ava-scene';
   scene.innerHTML = `
-    <div class="ava-row">
-      <img class="ava-img" src="ava.png" alt="Ava">
-      <div class="ava-topic">
-        <div class="ava-topic-label">주제</div>
-        <div class="ava-topic-value">${topic.label_ko} · ${topic.label_en}</div>
-      </div>
-    </div>
     <div class="caption-area" id="captionArea"></div>
     <button class="speak-btn" id="speakBtn" type="button">🔊 Ava가 대답 들려주기</button>
   `;
